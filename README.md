@@ -62,6 +62,21 @@ src/main/
     └── index.html         # 動作確認用の最小 UI
 ```
 
+## ハンズオン
+
+[handson/](handson/) で **対話形式 + Mermaid** の lesson が読める。volta-auth-proxy 連携、RBAC、tramli の制約付き state machine、auth flow 可視化までを手を動かして学ぶ構成。
+
+```
+handson/
+├── 00-overview/         ← ForwardAuth とヘッダ信頼モデル
+├── 01-volta-headers/    ← 認証なし → ヘッダで user/tenant 識別
+├── 02-whoami/           ← /me で受け取った値を露出
+├── 03-rbac/             ← X-Volta-Role で認可
+├── 04-tramli-basics/    ← tramli 思想を todo lifecycle で学ぶ
+├── 05-auth-viz-static/  ← auth flow を Mermaid で可視化
+└── 99-roadmap/          ← SSE / Webhook / 招待 / 本物 tramli
+```
+
 ## 設計メモ
 
 - **依存は `jakarta.servlet-api` だけ。** JSON も自前。
