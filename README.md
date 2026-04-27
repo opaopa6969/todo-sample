@@ -12,7 +12,7 @@
 
 ```bash
 mvn jetty:run
-# http://localhost:8080/
+# http://localhost:7743/   ← 7-7-4-3 = ななし(名無し)+3
 ```
 
 ## API
@@ -27,7 +27,7 @@ mvn jetty:run
 ユーザは `(tenant, user)` の組で識別される。認証なし時はどちらも固定値(`public` / `anonymous`)。
 
 ```bash
-curl -d '{"title":"買い物"}' -H "Content-Type: application/json" http://localhost:8080/todos
+curl -d '{"title":"買い物"}' -H "Content-Type: application/json" http://localhost:7743/todos
 # → {"id":1,"title":"買い物","done":false,"createdAt":...}
 ```
 
