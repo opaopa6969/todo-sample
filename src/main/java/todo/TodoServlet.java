@@ -16,8 +16,10 @@ public class TodoServlet extends HttpServlet {
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("application/json; charset=utf-8");
 
-        String tenant = "public";
-        String user = "anonymous";
+        String tenant = req.getHeader("X-Volta-Tenant-Id");
+        String user   = req.getHeader("X-Volta-User-Id");
+        if (tenant == null || tenant.isBlank()) tenant = "public";
+        if (user   == null || user.isBlank())   user   = "anonymous";
 
         Long id;
         try {
