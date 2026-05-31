@@ -5,8 +5,9 @@
 - Java 17 / Maven / Jakarta Servlet 5 のみ(他フレームワーク無し)
 - ストレージはインメモリ
 - tenant × user の2軸でデータを分離
-- 認証なしで動かすと `tenant=public, user=anonymous` の共有バケットに落ちる(2ch+名無し的)
-- volta-auth-proxy を前段に置けば、`X-Volta-Tenant-Id` / `X-Volta-User-Id` を読むよう **2行書き換える** だけでテナント分離が効く
+- `X-Volta-Tenant-Id` / `X-Volta-User-Id` ヘッダを読んでテナント分離を実現
+- ヘッダ未設定時は `tenant=public, user=anonymous` の共有バケットに落ちる(2ch+名無し的)
+- volta-auth-proxy を前段に置けばそのままテナント分離が効く
 
 ## 起動
 
@@ -24,7 +25,9 @@ mvn jetty:run
 | PUT    | `/todos/{id}` | `{"title":"...","done":true}`(部分更新可) | 更新 |
 | DELETE | `/todos/{id}` | — | 削除 → 204 |
 
-ユーザは `(tenant, user)` の組で識別される。認証なし時はどちらも固定値(`public` / `anonymous`)。
+ユーザは `(tenant, user)` の組で識別される。`X-Volta-Tenant-Id` / `X-Volta-User-Id` ヘッダを読んで分離し、未設定時は `public` / `anonymous` にフォールバックする。
+
+リクエストボディは最大 64 KiB に制限される。超過時は `413 Request Entity Too Large` を返す。
 
 ```bash
 curl -d '{"title":"買い物"}' -H "Content-Type: application/json" http://localhost:7743/todos
@@ -33,14 +36,11 @@ curl -d '{"title":"買い物"}' -H "Content-Type: application/json" http://local
 
 ## volta-auth-proxy と繋ぐ
 
-`TodoServlet#service` の **このブロックだけ** 書き換える:
+`TodoServlet#service` は既に `X-Volta-Tenant-Id` / `X-Volta-User-Id` を読む実装になっている。
+volta-auth-proxy を前段に置くだけでテナント分離が有効になる。コードの変更は不要。
 
 ```java
-// 認証なし(現状)
-String tenant = "public";
-String user   = "anonymous";
-
-// volta-auth-proxy 経由(置換後)
+// 現状の実装(ヘッダを読む)
 String tenant = req.getHeader("X-Volta-Tenant-Id");
 String user   = req.getHeader("X-Volta-User-Id");
 if (tenant == null || tenant.isBlank()) tenant = "public";
@@ -80,6 +80,6 @@ handson/
 ## 設計メモ
 
 - **依存は `jakarta.servlet-api` だけ。** JSON も自前。
-- **永続化なし。** プロセス再起動で消える。差し替える場合は `TodoStore` の1ファイルで完結。
+- **永続化なし(インメモリのみ)。** プロセス再起動でデータは消える。複数インスタンスで起動しても状態は共有されない。本番用途には向かない。差し替える場合は `TodoStore` の1ファイルで完結。
 - **anonymous 共有バケット** は、proxy を外した時に「公開掲示板」的に振る舞う。意図された挙動。
 - 認証は **アプリで持たない** 方針(volta-auth-proxy に寄せる)。アプリはヘッダを読むだけ。

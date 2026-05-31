@@ -50,6 +50,8 @@ public class TodoServlet extends HttpServlet {
                 default:
                     error(resp, 405, "method not allowed");
             }
+        } catch (BodyTooLargeException e) {
+            error(resp, 413, e.getMessage());
         } catch (RuntimeException e) {
             error(resp, 400, e.getMessage() == null ? "bad request" : e.getMessage());
         }
@@ -98,13 +100,23 @@ public class TodoServlet extends HttpServlet {
         resp.setStatus(204);
     }
 
+    private static final int MAX_BODY_BYTES = 65_536; // 64 KiB
+
     @SuppressWarnings("unchecked")
     private Map<String, Object> readBody(HttpServletRequest req) throws IOException {
-        String s = new String(req.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        byte[] buf = req.getInputStream().readNBytes(MAX_BODY_BYTES + 1);
+        if (buf.length > MAX_BODY_BYTES) {
+            throw new BodyTooLargeException();
+        }
+        String s = new String(buf, StandardCharsets.UTF_8);
         if (s.isBlank()) return Map.of();
         Object parsed = Json.parse(s);
         if (!(parsed instanceof Map)) throw new RuntimeException("body must be a JSON object");
         return (Map<String, Object>) parsed;
+    }
+
+    private static final class BodyTooLargeException extends RuntimeException {
+        BodyTooLargeException() { super("request body too large"); }
     }
 
     private String toJson(Todo t) {
