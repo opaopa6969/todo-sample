@@ -42,7 +42,7 @@
                 <version>11.0.20</version>
                 <configuration>
                     <httpConnector>
-                        <port>7743</port>
+                        <port>27743</port>
                     </httpConnector>
                     <webApp>
                         <contextPath>/</contextPath>
