@@ -59,16 +59,16 @@ flowchart LR
 # alice@tnt_a が todo 作る
 curl -d '{"title":"alice の作業"}' -H "Content-Type: application/json" \
      -H "X-Volta-User-Id: alice" -H "X-Volta-Tenant-Id: tnt_a" -H "X-Volta-Role: MEMBER" \
-     http://localhost:7743/todos
+     http://localhost:27743/todos
 # → id=1
 
 # bob@tnt_a (MEMBER) が alice の todo を消そうとする
 curl -X DELETE -H "X-Volta-User-Id: bob" -H "X-Volta-Tenant-Id: tnt_a" -H "X-Volta-Role: MEMBER" \
-     http://localhost:7743/todos/1
+     http://localhost:27743/todos/1
 # → 403 forbidden
 
 # carol@tnt_a (ADMIN) なら消せる
 curl -X DELETE -H "X-Volta-User-Id: carol" -H "X-Volta-Tenant-Id: tnt_a" -H "X-Volta-Role: ADMIN" \
-     http://localhost:7743/todos/1
+     http://localhost:27743/todos/1
 # → 204
 ```

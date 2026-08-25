@@ -32,7 +32,7 @@ public enum AuthState {
 `GET /auth-flow.mermaid` で `AuthFlow.toMermaid()` の結果を `text/plain` で返す。
 
 ```bash
-curl http://localhost:7743/auth-flow.mermaid
+curl http://localhost:27743/auth-flow.mermaid
 # stateDiagram-v2
 #   [*] --> UNAUTHENTICATED
 #   UNAUTHENTICATED --> LOGIN_REDIRECT : start_login
@@ -109,7 +109,7 @@ function inferState(me) {
 mvn jetty:run
 ```
 
-ブラウザで http://localhost:7743/auth-viz.html
+ブラウザで http://localhost:27743/auth-viz.html
 
 - ヘッダ無しなので `UNAUTHENTICATED` がハイライト
 
@@ -118,7 +118,7 @@ mvn jetty:run
 ```bash
 # proxy のフリで todo を叩く
 curl -H "X-Volta-User-Id: alice" -H "X-Volta-Tenant-Id: tnt_a" -H "X-Volta-Role: MEMBER" \
-     http://localhost:7743/todos
+     http://localhost:27743/todos
 ```
 
 …ブラウザは結局自分自身のヘッダしか送れないので、**ブラウザからのハイライト変化を見るには** `/me` を擬似的にヘッダ付きで叩く必要がある。簡単な確認方法:
@@ -126,7 +126,7 @@ curl -H "X-Volta-User-Id: alice" -H "X-Volta-Tenant-Id: tnt_a" -H "X-Volta-Role:
 ```bash
 # /me を curl で確認(ブラウザでなく)
 curl -H "X-Volta-User-Id: alice" -H "X-Volta-Tenant-Id: tnt_a" -H "X-Volta-Role: MEMBER" \
-     http://localhost:7743/me
+     http://localhost:27743/me
 # → authenticated:true, role:MEMBER → COMPLETE 推定
 ```
 

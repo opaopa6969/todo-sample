@@ -193,31 +193,31 @@ private void deleteScoped(String tenant, String user, long id, boolean canActOnO
 # alice (MEMBER) で投稿
 curl -s -d '{"title":"alice"}' -H "Content-Type: application/json" \
      -H "X-Volta-User-Id: alice" -H "X-Volta-Tenant-Id: tnt_a" -H "X-Volta-Role: MEMBER" \
-     http://localhost:7743/todos
+     http://localhost:27743/todos
 # → id=1
 
 # bob (MEMBER) は alice の todo を消せない
 curl -s -o /dev/null -w "%{http_code}\n" -X DELETE \
      -H "X-Volta-User-Id: bob" -H "X-Volta-Tenant-Id: tnt_a" -H "X-Volta-Role: MEMBER" \
-     http://localhost:7743/todos/1
+     http://localhost:27743/todos/1
 # → 403
 
 # bob は ?user=alice で取得もできない
 curl -s -o /dev/null -w "%{http_code}\n" \
      -H "X-Volta-User-Id: bob" -H "X-Volta-Tenant-Id: tnt_a" -H "X-Volta-Role: MEMBER" \
-     "http://localhost:7743/todos?user=alice"
+     "http://localhost:27743/todos?user=alice"
 # → 403
 
 # carol (ADMIN) なら消せる
 curl -s -o /dev/null -w "%{http_code}\n" -X DELETE \
      -H "X-Volta-User-Id: carol" -H "X-Volta-Tenant-Id: tnt_a" -H "X-Volta-Role: ADMIN" \
-     http://localhost:7743/todos/1
+     http://localhost:27743/todos/1
 # → 204
 
 # 別テナントは ADMIN でも 404
 curl -s -o /dev/null -w "%{http_code}\n" -X DELETE \
      -H "X-Volta-User-Id: carol" -H "X-Volta-Tenant-Id: tnt_b" -H "X-Volta-Role: ADMIN" \
-     http://localhost:7743/todos/999
+     http://localhost:27743/todos/999
 # → 404
 ```
 

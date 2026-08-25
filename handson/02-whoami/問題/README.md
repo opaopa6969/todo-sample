@@ -51,10 +51,10 @@
 ## 検証
 
 ```bash
-curl http://localhost:7743/me                       # anonymous
+curl http://localhost:27743/me                       # anonymous
 curl -H "X-Volta-User-Id: alice" -H "X-Volta-Tenant-Id: tnt_a" -H "X-Volta-Role: MEMBER" \
-     http://localhost:7743/me                       # 認証あり
-curl -X POST http://localhost:7743/me               # 405 method not allowed
+     http://localhost:27743/me                       # 認証あり
+curl -X POST http://localhost:27743/me               # 405 method not allowed
 ```
 
 書けたら [答え](../答え/) へ。

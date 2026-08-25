@@ -41,31 +41,31 @@ ADMIN/OWNER は **同じテナント内の他人の todo** を読み書き削除
 # alice@tnt_a (MEMBER) が todo 作る
 curl -s -d '{"title":"alice作業"}' -H "Content-Type: application/json" \
      -H "X-Volta-User-Id: alice" -H "X-Volta-Tenant-Id: tnt_a" -H "X-Volta-Role: MEMBER" \
-     http://localhost:7743/todos
+     http://localhost:27743/todos
 # → id=1 が返る
 
 # bob@tnt_a (MEMBER) は alice の todo を見たり消したりできない
 curl -s -o /dev/null -w "%{http_code}\n" -X DELETE \
      -H "X-Volta-User-Id: bob" -H "X-Volta-Tenant-Id: tnt_a" -H "X-Volta-Role: MEMBER" \
-     http://localhost:7743/todos/1
+     http://localhost:27743/todos/1
 # → 403
 
 # bob が ?user=alice 指定で取得しようとしても拒否
 curl -s -o /dev/null -w "%{http_code}\n" \
      -H "X-Volta-User-Id: bob" -H "X-Volta-Tenant-Id: tnt_a" -H "X-Volta-Role: MEMBER" \
-     "http://localhost:7743/todos?user=alice"
+     "http://localhost:27743/todos?user=alice"
 # → 403
 
 # carol@tnt_a (ADMIN) は alice の todo を消せる
 curl -s -o /dev/null -w "%{http_code}\n" -X DELETE \
      -H "X-Volta-User-Id: carol" -H "X-Volta-Tenant-Id: tnt_a" -H "X-Volta-Role: ADMIN" \
-     http://localhost:7743/todos/1
+     http://localhost:27743/todos/1
 # → 204
 
 # carol が tnt_b の todo は触れない(別テナント)
 curl -s -o /dev/null -w "%{http_code}\n" -X DELETE \
      -H "X-Volta-User-Id: carol" -H "X-Volta-Tenant-Id: tnt_b" -H "X-Volta-Role: ADMIN" \
-     http://localhost:7743/todos/1
+     http://localhost:27743/todos/1
 # → 404 (tnt_b には存在しない)
 ```
 

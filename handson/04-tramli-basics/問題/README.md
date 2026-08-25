@@ -96,30 +96,30 @@ if (currentState.isTerminal()) throw new IllegalArgumentException("already termi
 ```bash
 # create
 curl -s -d '{"title":"買い物"}' -H "Content-Type: application/json" \
-     http://localhost:7743/todos
+     http://localhost:27743/todos
 # → {"id":1,"title":"買い物","state":"NEW","createdAt":...}
 
 # NEW → DOING
 curl -s -X PUT -d '{"action":"start"}' -H "Content-Type: application/json" \
-     http://localhost:7743/todos/1
+     http://localhost:27743/todos/1
 # → {"id":1,"title":"買い物","state":"DOING",...}
 
 # DOING → DONE
 curl -s -X PUT -d '{"action":"complete"}' -H "Content-Type: application/json" \
-     http://localhost:7743/todos/1
+     http://localhost:27743/todos/1
 # → {"id":1,"title":"買い物","state":"DONE",...}
 
 # DONE からは何もできない
 curl -s -X PUT -d '{"action":"start"}' -H "Content-Type: application/json" \
-     http://localhost:7743/todos/1
+     http://localhost:27743/todos/1
 # → 400 invalid transition
 
 # NEW から DONE はできない(skip 不可)
 curl -s -d '{"title":"スキップ試行"}' -H "Content-Type: application/json" \
-     http://localhost:7743/todos                    # → id=2 (NEW)
+     http://localhost:27743/todos                    # → id=2 (NEW)
 curl -s -o /dev/null -w "%{http_code}\n" -X PUT \
      -d '{"action":"complete"}' -H "Content-Type: application/json" \
-     http://localhost:7743/todos/2
+     http://localhost:27743/todos/2
 # → 400 invalid transition
 ```
 

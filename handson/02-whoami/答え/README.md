@@ -100,7 +100,7 @@ sb.append(",\"role\":").append(role == null ? "null" : Json.escape(role))
 mvn jetty:run
 
 # anonymous
-curl -s http://localhost:7743/me | jq
+curl -s http://localhost:27743/me | jq
 # {
 #   "user": "anonymous",
 #   "tenant": "public",
@@ -112,7 +112,7 @@ curl -s http://localhost:7743/me | jq
 curl -s -H "X-Volta-User-Id: alice" \
         -H "X-Volta-Tenant-Id: tnt_a" \
         -H "X-Volta-Role: MEMBER" \
-        http://localhost:7743/me | jq
+        http://localhost:27743/me | jq
 # {
 #   "user": "alice",
 #   "tenant": "tnt_a",
@@ -121,7 +121,7 @@ curl -s -H "X-Volta-User-Id: alice" \
 # }
 
 # 不正メソッド
-curl -s -o /dev/null -w "%{http_code}\n" -X POST http://localhost:7743/me
+curl -s -o /dev/null -w "%{http_code}\n" -X POST http://localhost:27743/me
 # 405
 ```
 
