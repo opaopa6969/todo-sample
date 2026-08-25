@@ -65,20 +65,20 @@ mvn jetty:run
 
 # anonymous(public バケット)
 curl -d '{"title":"匿名"}' -H "Content-Type: application/json" \
-     http://localhost:7743/todos
+     http://localhost:27743/todos
 
 # alice@tnt_a
 curl -d '{"title":"アリス"}' -H "Content-Type: application/json" \
      -H "X-Volta-User-Id: alice" -H "X-Volta-Tenant-Id: tnt_a" \
-     http://localhost:7743/todos
+     http://localhost:27743/todos
 
-curl -H "X-Volta-User-Id: alice" -H "X-Volta-Tenant-Id: tnt_a" http://localhost:7743/todos
+curl -H "X-Volta-User-Id: alice" -H "X-Volta-Tenant-Id: tnt_a" http://localhost:27743/todos
 # → アリスの todo
 
-curl -H "X-Volta-User-Id: alice" -H "X-Volta-Tenant-Id: tnt_b" http://localhost:7743/todos
+curl -H "X-Volta-User-Id: alice" -H "X-Volta-Tenant-Id: tnt_b" http://localhost:27743/todos
 # → []  ← tenant が違えば同じ user_id でも別人扱い
 
-curl http://localhost:7743/todos
+curl http://localhost:27743/todos
 # → 匿名で書いたやつだけ
 ```
 

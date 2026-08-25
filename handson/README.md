@@ -30,16 +30,16 @@ flowchart LR
 
 ## 前提
 
-- todo-sample がローカルで動くこと(`mvn jetty:run` → http://localhost:7743/)
+- todo-sample がローカルで動くこと(`mvn jetty:run` → http://localhost:27743/)
 - `curl` が使えること
 - 認証なしで `(tenant=public, user=anonymous)` バケットに書き込めることを確認済み
 
 確認:
 
 ```bash
-curl -s http://localhost:7743/todos                 # → []
+curl -s http://localhost:27743/todos                 # → []
 curl -s -d '{"title":"hello"}' -H "Content-Type: application/json" \
-     http://localhost:7743/todos                    # → {"id":1,...}
+     http://localhost:27743/todos                    # → {"id":1,...}
 ```
 
 ## ルール

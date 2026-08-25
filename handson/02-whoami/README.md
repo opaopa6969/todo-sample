@@ -36,10 +36,10 @@ flowchart LR
 ## 検証イメージ
 
 ```bash
-curl http://localhost:7743/me
+curl http://localhost:27743/me
 # → {"user":"anonymous","tenant":"public","role":null,"authenticated":false}
 
 curl -H "X-Volta-User-Id: alice" -H "X-Volta-Tenant-Id: tnt_a" -H "X-Volta-Role: MEMBER" \
-     http://localhost:7743/me
+     http://localhost:27743/me
 # → {"user":"alice","tenant":"tnt_a","role":"MEMBER","authenticated":true}
 ```

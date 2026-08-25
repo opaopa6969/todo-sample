@@ -1,0 +1,94 @@
+{
+  "repo": "todo-sample",
+  "surveyed_at": "2026-08-21T23:13:03Z",
+  "kind": "service",
+  "summary": "volta-auth-proxy のヘッダ信頼モデルを学ぶための最小 multi-tenant todo API サンプル。Java 17 / Maven / Jakarta Servlet 5 のみ、ストレージはインメモリ、永続化なし。handson/ に 6 章の対話型レッスンを同梱し、RBAC・tramli による制約付き state machine・auth flow 可視化までを扱う教材。",
+  "decision": "skip",
+  "decision_reason": "本体は教育用サンプルであり、データはプロセス内インメモリで再起動で消える。認証・テナント分離・永続化の責務はすべて外部（volta-auth-proxy, 永続化層）に意図的に追い出されており、todo の CRUD を MCP tool として露出しても agent が呼びたい安定した能力にはならない。教材としての価値は handson/ の手順・概念解説にあるので、それらは resource/skill として配る意義はあるが、その場合でも「todo-sample 固有の手順」ではなく volta-auth-proxy 側の skill に統合するほうが自然。よって本体の MCP 化は skip とし、補助的な resource/skill 候補だけ記録する。",
+  "existing": {
+    "http_api": true,
+    "cli": false,
+    "mcp": false,
+    "healthz": false,
+    "volta_manifest": false,
+    "hosted_url": null
+  },
+  "proposed_namespace": null,
+  "capabilities": [
+    {
+      "verb": "todo を作成/一覧/更新/削除する",
+      "kind": "tool",
+      "name": "todo_crud",
+      "io": "{tenant,user} + {title,done} → todo object",
+      "side_effect": "write",
+      "long_running": false,
+      "maps_to": "src/main/java/todo/TodoServlet.java#service"
+    },
+    {
+      "verb": "この API の契約仕様を参照する",
+      "kind": "resource",
+      "name": "spec",
+      "uri": "todo://spec"
+    },
+    {
+      "verb": "教材の進め方・概念解説を参照する",
+      "kind": "resource",
+      "name": "guide",
+      "uri": "todo://guide"
+    },
+    {
+      "verb": "ForwardAuth + ヘッダ信頼モデルでアプリを認証フリーにする手順",
+      "kind": "skill",
+      "name": "forwardauth-headers",
+      "locality": "global"
+    },
+    {
+      "verb": "todo lifecycle で tramli の制約付き state machine を学ぶ手順",
+      "kind": "skill",
+      "name": "tramli-on-todo",
+      "locality": "repo"
+    }
+  ],
+  "composition_examples": [
+    "（採用しないので具体例は非現実的）仮に MCP 化するなら todo_sample__todo_crud → auth_proxy__whoami でユーザを確定してから書き込む絵は描けるが、インメモリ・非永続のため agent が安定して使える状態ではない"
+  ],
+  "dependencies": [
+    {
+      "repo": "volta-auth-proxy",
+      "direction": "depends_on",
+      "capability": "X-Volta-User-Id / X-Volta-Tenant-Id / X-Volta-Role ヘッダ付与（ForwardAuth）",
+      "exists_now": true,
+      "note": "catalog に存在（operational_status: retired）。todo-sample はこの proxy の後段で動く前提だが、ローカルでは curl -H で模倣できる。proxy が MCP 入口を持つかは未調査。"
+    },
+    {
+      "repo": "tramli",
+      "direction": "depends_on",
+      "capability": "制約付き state machine（handson 04 の題材。todo lifecycle に適用）",
+      "exists_now": true,
+      "note": "catalog に library として存在（MCP 入口なし）。handson の中で概念的に使うだけで、実行時依存ではない。"
+    },
+    {
+      "repo": "volta-auth-console",
+      "direction": "provides_to",
+      "capability": "なし（todo-sample は管理対象アプリの教材だが、console は auth-proxy を管理する）",
+      "exists_now": true,
+      "note": "直接の依存関係はない。同じ auth 系のエコシステムに属する参考記載。"
+    }
+  ],
+  "library_serve": {
+    "needed": false,
+    "new_work": [],
+    "runtime": "java",
+    "estimated_effort": "S"
+  },
+  "risks": [
+    "インメモリのみで永続化がないため、MCP tool として露出してもプロセス再起動でデータが消え、agent の作業成果が安定しない。",
+    "認証をアプリ外（volta-auth-proxy）に依存しているため、MCP サーバとして直接露出するとヘッダ偽装による tenant/user なりすましが可能になる（教材では意図された挙動だが MCP 公開時はリスク）。",
+    "volta-auth-proxy は catalog 上 retired とされており、本番経路としての前提が現在有効か不明。"
+  ],
+  "open_questions": [
+    "todo-sample を volta 上で常駐公開する予定があるか（現状はローカル教材に見える）。",
+    "volta-auth-proxy の retired 状態は一時的か恒久的か。これによって todo-sample の本番での位置づけが変わる。",
+    "handson/ の内容を volta-mcp の skill/resource として配る意義があるか、それとも repo 内完結でよいか。"
+  ]
+}

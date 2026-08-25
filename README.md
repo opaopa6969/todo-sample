@@ -13,7 +13,7 @@
 
 ```bash
 mvn jetty:run
-# http://localhost:7743/   ← 7-7-4-3 = ななし(名無し)+3
+# http://localhost:27743/
 ```
 
 ## API
@@ -30,7 +30,7 @@ mvn jetty:run
 リクエストボディは最大 64 KiB に制限される。超過時は `413 Request Entity Too Large` を返す。
 
 ```bash
-curl -d '{"title":"買い物"}' -H "Content-Type: application/json" http://localhost:7743/todos
+curl -d '{"title":"買い物"}' -H "Content-Type: application/json" http://localhost:27743/todos
 # → {"id":1,"title":"買い物","done":false,"createdAt":...}
 ```
 

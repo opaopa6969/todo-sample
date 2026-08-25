@@ -48,7 +48,7 @@ async function api(method, path, body) {
   if (!u) return null;
   const res = await fetch(path, {
     method,
-    headers: { 'X-User': u, 'Content-Type': 'application/json' },
+    headers: { 'X-Volta-User-Id': u, 'Content-Type': 'application/json' },
     body: body ? JSON.stringify(body) : undefined,
   });
   if (res.status === 204) return null;

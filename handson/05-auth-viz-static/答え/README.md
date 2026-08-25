@@ -227,20 +227,20 @@ flowchart LR
 mvn jetty:run
 ```
 
-1. http://localhost:7743/auth-viz.html — `UNAUTHENTICATED` がハイライト
+1. http://localhost:27743/auth-viz.html — `UNAUTHENTICATED` がハイライト
 2. 別タブで /auth-flow.mermaid を確認:
 
 ```bash
-curl http://localhost:7743/auth-flow.mermaid
+curl http://localhost:27743/auth-flow.mermaid
 ```
 
 3. /me を proxy のフリで叩いて推定状態の確認:
 
 ```bash
-curl http://localhost:7743/me                                 # → UNAUTHENTICATED
-curl -H "X-Volta-User-Id: alice" http://localhost:7743/me     # → USER_RESOLVED
+curl http://localhost:27743/me                                 # → UNAUTHENTICATED
+curl -H "X-Volta-User-Id: alice" http://localhost:27743/me     # → USER_RESOLVED
 curl -H "X-Volta-User-Id: alice" -H "X-Volta-Role: MEMBER" \
-     http://localhost:7743/me                                 # → COMPLETE
+     http://localhost:27743/me                                 # → COMPLETE
 ```
 
 (ブラウザのハイライトを動的に変えるには volta が前段にいるか、ブラウザ拡張でヘッダ付与が必要)
