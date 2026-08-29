@@ -6,8 +6,11 @@ import java.util.List;
 import java.util.Map;
 
 final class Json {
+    static final int MAX_DEPTH = 200;
+
     private final String s;
     private int i;
+    private int depth;
 
     private Json(String s) { this.s = s; }
 
@@ -32,37 +35,51 @@ final class Json {
     }
 
     private Map<String, Object> object() {
-        expect('{');
-        Map<String, Object> m = new LinkedHashMap<>();
-        skipWs();
-        if (peek() == '}') { i++; return m; }
-        while (true) {
+        enter();
+        try {
+            expect('{');
+            Map<String, Object> m = new LinkedHashMap<>();
             skipWs();
-            String k = string();
-            skipWs();
-            expect(':');
-            m.put(k, value());
-            skipWs();
-            char c = s.charAt(i++);
-            if (c == ',') continue;
-            if (c == '}') return m;
-            throw new RuntimeException("expected , or }");
+            if (peek() == '}') { i++; return m; }
+            while (true) {
+                skipWs();
+                String k = string();
+                skipWs();
+                expect(':');
+                m.put(k, value());
+                skipWs();
+                char c = s.charAt(i++);
+                if (c == ',') continue;
+                if (c == '}') return m;
+                throw new RuntimeException("expected , or }");
+            }
+        } finally {
+            depth--;
         }
     }
 
     private List<Object> array() {
-        expect('[');
-        List<Object> a = new ArrayList<>();
-        skipWs();
-        if (peek() == ']') { i++; return a; }
-        while (true) {
-            a.add(value());
+        enter();
+        try {
+            expect('[');
+            List<Object> a = new ArrayList<>();
             skipWs();
-            char c = s.charAt(i++);
-            if (c == ',') continue;
-            if (c == ']') return a;
-            throw new RuntimeException("expected , or ]");
+            if (peek() == ']') { i++; return a; }
+            while (true) {
+                a.add(value());
+                skipWs();
+                char c = s.charAt(i++);
+                if (c == ',') continue;
+                if (c == ']') return a;
+                throw new RuntimeException("expected , or ]");
+            }
+        } finally {
+            depth--;
         }
+    }
+
+    private void enter() {
+        if (depth++ >= MAX_DEPTH) throw new RuntimeException("nesting too deep");
     }
 
     private String string() {

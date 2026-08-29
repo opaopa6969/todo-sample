@@ -174,6 +174,38 @@ class TodoServletTest {
     }
 
     @Test
+    void deeplyNestedJsonIsRejectedBeforeStackOverflow() throws Exception {
+        String tenant = "nest-tenant-" + UUID.randomUUID();
+        String user = "nest-user-" + UUID.randomUUID();
+
+        Exchange created = exchange("POST", null, tenant, user, "{\"title\":\"seed\"}");
+        assertEquals(201, created.status());
+        String id = created.body().replaceFirst("^\\{\"id\":(\\d+).*$", "$1");
+
+        int overLimit = 500;
+        StringBuilder nested = new StringBuilder();
+        for (int k = 0; k < overLimit; k++) nested.append('[');
+        nested.append("1");
+        for (int k = 0; k < overLimit; k++) nested.append(']');
+        assertTrue(nested.toString().getBytes(StandardCharsets.UTF_8).length < 65_536,
+                "payload must stay under the 64 KiB body limit to prove the DoS is in-bounds");
+
+        Exchange rejected = exchange("PUT", "/" + id, tenant, user, nested.toString());
+        assertEquals(400, rejected.status());
+        assertEquals("{\"error\":\"nesting too deep\"}", rejected.body());
+
+        int underLimit = 50;
+        StringBuilder shallow = new StringBuilder("{\"title\":\"ok\",\"deep\":[");
+        for (int k = 0; k < underLimit; k++) shallow.append('[');
+        shallow.append("1");
+        for (int k = 0; k < underLimit; k++) shallow.append(']');
+        shallow.append("]}");
+        Exchange accepted = exchange("PUT", "/" + id, tenant, user, shallow.toString());
+        assertEquals(200, accepted.status());
+        assertTrue(accepted.body().contains("\"title\":\"ok\""));
+    }
+
+    @Test
     void putWithMalformedOrNonObjectJsonBodyReturnsClientError() throws Exception {
         String tenant = "badbody-tenant-" + UUID.randomUUID();
         String user = "badbody-user-" + UUID.randomUUID();
