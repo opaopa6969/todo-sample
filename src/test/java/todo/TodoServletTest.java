@@ -78,6 +78,118 @@ class TodoServletTest {
         assertEquals("{\"error\":\"request body too large\"}", rejected.body());
     }
 
+    @Test
+    void deleteIsIsolatedByTenantBoundary() throws Exception {
+        String ownerTenant = "del-owner-" + UUID.randomUUID();
+        String otherTenant = "del-other-" + UUID.randomUUID();
+        String user = "del-user-" + UUID.randomUUID();
+
+        Exchange created = exchange("POST", null, ownerTenant, user, "{\"title\":\"killme\"}");
+        assertEquals(201, created.status());
+        String id = created.body().replaceFirst("^\\{\"id\":(\\d+).*$", "$1");
+
+        Exchange crossDelete = exchange("DELETE", "/" + id, otherTenant, user, "");
+        assertEquals(404, crossDelete.status());
+        assertEquals("{\"error\":\"not found\"}", crossDelete.body());
+
+        Exchange stillThere = exchange("GET", null, ownerTenant, user, "");
+        assertEquals(200, stillThere.status());
+        assertTrue(stillThere.body().contains("\"title\":\"killme\""));
+
+        Exchange ownerDelete = exchange("DELETE", "/" + id, ownerTenant, user, "");
+        assertEquals(204, ownerDelete.status());
+        assertEquals("", ownerDelete.body());
+
+        Exchange afterDelete = exchange("GET", null, ownerTenant, user, "");
+        assertEquals(200, afterDelete.status());
+        assertEquals("[]", afterDelete.body());
+    }
+
+    @Test
+    void createRejectsBlankAndNonStringTitles() throws Exception {
+        String tenant = "title-tenant-" + UUID.randomUUID();
+        String user = "title-user-" + UUID.randomUUID();
+
+        Exchange missing = exchange("POST", null, tenant, user, "{}");
+        assertEquals(400, missing.status());
+        assertEquals("{\"error\":\"title required\"}", missing.body());
+
+        Exchange empty = exchange("POST", null, tenant, user, "{\"title\":\"\"}");
+        assertEquals(400, empty.status());
+        assertEquals("{\"error\":\"title required\"}", empty.body());
+
+        Exchange blank = exchange("POST", null, tenant, user, "{\"title\":\"   \"}");
+        assertEquals(400, blank.status());
+        assertEquals("{\"error\":\"title required\"}", blank.body());
+
+        Exchange numeric = exchange("POST", null, tenant, user, "{\"title\":123}");
+        assertEquals(400, numeric.status());
+        assertEquals("{\"error\":\"title required\"}", numeric.body());
+    }
+
+    @Test
+    void updateAppliesPartialFieldsAndPreservesTheRest() throws Exception {
+        String tenant = "put-tenant-" + UUID.randomUUID();
+        String user = "put-user-" + UUID.randomUUID();
+
+        Exchange created = exchange("POST", null, tenant, user, "{\"title\":\"original\"}");
+        assertEquals(201, created.status());
+        String id = created.body().replaceFirst("^\\{\"id\":(\\d+).*$", "$1");
+
+        Exchange emptyBody = exchange("PUT", "/" + id, tenant, user, "{}");
+        assertEquals(200, emptyBody.status());
+        assertTrue(emptyBody.body().contains("\"title\":\"original\""));
+        assertTrue(emptyBody.body().contains("\"done\":false"));
+
+        Exchange toggleDone = exchange("PUT", "/" + id, tenant, user, "{\"done\":true}");
+        assertEquals(200, toggleDone.status());
+        assertTrue(toggleDone.body().contains("\"title\":\"original\""));
+        assertTrue(toggleDone.body().contains("\"done\":true"));
+
+        Exchange explicitFalse = exchange("PUT", "/" + id, tenant, user, "{\"done\":false}");
+        assertEquals(200, explicitFalse.status());
+        assertTrue(explicitFalse.body().contains("\"done\":false"));
+
+        Exchange rename = exchange("PUT", "/" + id, tenant, user, "{\"title\":\"renamed\"}");
+        assertEquals(200, rename.status());
+        assertTrue(rename.body().contains("\"title\":\"renamed\""));
+        assertTrue(rename.body().contains("\"done\":false"));
+    }
+
+    @Test
+    void titleWithJsonMetacharactersSurvivesRoundTrip() throws Exception {
+        String tenant = "escape-tenant-" + UUID.randomUUID();
+        String user = "escape-user-" + UUID.randomUUID();
+        String title = "quote\" backslash\\ newline\n tab\t end";
+        String body = "{\"title\":" + Json.escape(title) + "}";
+
+        Exchange created = exchange("POST", null, tenant, user, body);
+        assertEquals(201, created.status());
+        String expectedField = "\"title\":" + Json.escape(title);
+        assertTrue(created.body().contains(expectedField));
+
+        Exchange listed = exchange("GET", null, tenant, user, "");
+        assertEquals(200, listed.status());
+        assertTrue(listed.body().contains(expectedField));
+    }
+
+    @Test
+    void putWithMalformedOrNonObjectJsonBodyReturnsClientError() throws Exception {
+        String tenant = "badbody-tenant-" + UUID.randomUUID();
+        String user = "badbody-user-" + UUID.randomUUID();
+
+        Exchange created = exchange("POST", null, tenant, user, "{\"title\":\"seed\"}");
+        assertEquals(201, created.status());
+        String id = created.body().replaceFirst("^\\{\"id\":(\\d+).*$", "$1");
+
+        Exchange broken = exchange("PUT", "/" + id, tenant, user, "{not json");
+        assertEquals(400, broken.status());
+
+        Exchange array = exchange("PUT", "/" + id, tenant, user, "[1,2,3]");
+        assertEquals(400, array.status());
+        assertEquals("{\"error\":\"body must be a JSON object\"}", array.body());
+    }
+
     private Exchange exchange(String method, String pathInfo, String tenant, String user, String body)
             throws Exception {
         byte[] input = body.getBytes(StandardCharsets.UTF_8);
